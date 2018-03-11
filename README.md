@@ -58,7 +58,8 @@
 [Adafruit GFX](https://github.com/adafruit/Adafruit-GFX-Library)\
 [Adafruit SSD1306](https://github.com/adafruit/Adafruit_SSD1306)
 
-将以上的库文件复制到 Arduino 文件夹 / libraries 下。
+**将以上的库文件复制到 Arduino 文件夹 / libraries 下。**\
+**你也可以放在 文档（ `~` ） / Arduino 中。**
 ### 编译上传
 现在重新打开 IDE ，打开本项目。\
 选择合适的开发板和端口，即可按下 ` Ctrl + U ` 上传。\
@@ -83,7 +84,8 @@
 
 ---
 ## 蓝牙接口说明
-通过命令来控制机器。\
+通过蓝牙传送命令来控制机器。\
+**确保你的模块设置为 38400 bps** ；你也可以手动在代码中更改波特率。
 ### 它能干什么？
  1. 设置任意一个提醒时间。
  2. 读取设置。
