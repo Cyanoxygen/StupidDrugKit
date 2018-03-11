@@ -1,0 +1,6 @@
+{
+    "port": "COM8",
+    "board": "arduino:avr:unowifi",
+    "sketch": "Smart.ino",
+    "output": "./build"
+}
