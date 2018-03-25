@@ -10,6 +10,7 @@
 #include <Servo.h>
 #include "Resource.h"
 #include <avr/pgmspace.h>
+#include <EEPROM.h>
 
 #define PlayPin 11
 #define RecPin 12
@@ -28,6 +29,7 @@ Adafruit_SSD1306 OLED(4);
 
 byte AlarmHour[3] = {9, 12, 19};
 byte AlarmMin[3] = {30, 20, 30};
+bool AlarmEnabled[3] = {true, true, true};
 bool cover = CClose;
 bool RecLock = false;
 bool Taked = false;
@@ -198,7 +200,55 @@ bool Arrived() // Finished
     }
   }
 }
+void SaveSettings() {
+  int addr = 0;
+  OLEDC();
+  Putchar(17,16,24);
+  Putchar(19,32,24);
+  Putchar(31,48,24);
+  Putchar(32,64,24);
+  Putchar(12,16,24);
+  Putchar(2,16,24);
+  OLEDOK();
+  for(addr = 0; addr <=2; addr++ ) {
+    delay(10);
+    EEPROM.write(byte(AlarmHour[addr]));
+  }
+  delay(400);
+  for(addr = 10; addr <=12; addr++ ) {
+    delay(10);
+    EEPROM.write(byte(Alarminute[(addr - 10)]));
+  }
+    for(addr =20; addr <=22; addr++ ) {
+    delay(10);
+    EEPROM.write(byte(AlarmEnabled[(addr - 20)]));
+  }
+  delay(100);
+}
 
+void ReadSettings() {
+  OLEDC();
+  Putchar(33,32,32);
+  Putchar(33,48,32);
+  Putchar(33,54,32);
+  Putchar(33,80,32);
+  OLEDOK();
+    int addr = 0;
+  for(addr = 0; addr <=2; addr++ ) {
+    delay(10);
+    AlarmHour[addr] = EEPROM.read(addr);
+  }
+  delay(400);
+  for(addr = 10; addr <=12; addr++ ) {
+    delay(10);
+    AlarmMin[(addr -10)] = EEPROM.read(addr);
+  }
+    for(addr =20; addr <=22; addr++ ) {
+    delay(10);
+    AlarmEnabled[(addr - 20)] = EEPROM.read(addr);
+  }
+  delay(100);
+}
 void AlarmGo()
 {
   cover = false;
@@ -366,9 +416,9 @@ bool touch2() // Finished
 bool PromptCommand(char Bt_input[])
 {
   byte _ahour, _amin, _aid;
-  bool setflag, readflag;
+  bool setflag, readflag , enableflag;
   // 处理错误
-  if (Bt_input[0] != 'r' && Bt_input[0] != 's' && Bt_input[0] != 'l' && Bt_input[0] != 'o')
+  if (Bt_input[0] != 'r' && Bt_input[0] != 's' && Bt_input[0] != 'l' && Bt_input[0] != 'o' && Bt_input[0] != 'e')
   {
     Serial.println("Unrecongized format");
     return 0;
@@ -384,6 +434,12 @@ bool PromptCommand(char Bt_input[])
 
     setflag = true;
     readflag = false;
+  }
+    else if (Bt_input[0] == 's')
+  {
+    setflag = false;
+    readflag = false;
+    enableflag = true;
   }
   else if (Bt_input[0] == 'l')
   {
@@ -451,6 +507,7 @@ bool PromptCommand(char Bt_input[])
         Serial.println({String(AlarmHour[(_aid)]) + "," + String(AlarmMin[(_aid)])});
       }
     }
+    SaveSettings();
     OLEDC();
     Putchar(13, 20, 24);
     Putchar(6, 36, 24);
@@ -503,6 +560,22 @@ bool PromptCommand(char Bt_input[])
       }
     }
   }
+  if(enableflag) {
+    if (((Bt_input[1] - 48) > 3) || ((Bt_input[1]) <= 0x30))
+    {
+      Serial.println("Invalid ID");
+      return false;
+    }
+    _aid = (Bt_input[1] - 48);
+    if(AlarmEnabled[(_aid -1)]){
+      AlarmEnabled[(_aid -1)] = false;
+      Serial.println("Alarm " + String(_aid) + "is now disabled.");
+    } else {
+      AlarmEnabled[(_aid -1)] = false;
+      Serial.println("Alarm " + String(_aid) + "is now enabled.");
+    }
+
+  }
 }
 void HomeScr() // Finished
 {
@@ -539,6 +612,7 @@ void setup() // Finished
   cover = true;
   CoverControl();
   cover = false;
+  ReadSettings();
   /*for (int i = 0; i <= 2; i++)
   {
     Serial.println({"ID = " + String(i) + "\nHour = " + String(AlarmHour[i]) + "\nMinute = " + String(AlarmMin[i])});
