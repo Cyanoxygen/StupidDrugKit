@@ -177,7 +177,8 @@ void OLEDPS(byte alid) // Finished
 bool Arrived() // Finished
 {
   for (char i = 0; i <= 2; i++)
-  {
+  { 
+    if(AlarmEnabled[i]) {
     if (tm.Hour == AlarmHour[i])
     {
       if (tm.Minute == AlarmMin[i])
@@ -199,6 +200,7 @@ bool Arrived() // Finished
       return false;
     }
   }
+  }
 }
 void SaveSettings() {
   int addr = 0;
@@ -212,16 +214,16 @@ void SaveSettings() {
   OLEDOK();
   for(addr = 0; addr <=2; addr++ ) {
     delay(10);
-    EEPROM.write(byte(AlarmHour[addr]));
+    EEPROM.write(addr,byte(AlarmHour[addr]));
   }
   delay(400);
   for(addr = 10; addr <=12; addr++ ) {
     delay(10);
-    EEPROM.write(byte(Alarminute[(addr - 10)]));
+    EEPROM.write(addr,byte(AlarmMin[(addr - 10)]));
   }
     for(addr =20; addr <=22; addr++ ) {
     delay(10);
-    EEPROM.write(byte(AlarmEnabled[(addr - 20)]));
+    EEPROM.write(addr,byte(AlarmEnabled[(addr - 20)]));
   }
   delay(100);
 }
@@ -229,9 +231,9 @@ void SaveSettings() {
 void ReadSettings() {
   OLEDC();
   Putchar(33,32,32);
-  Putchar(33,48,32);
-  Putchar(33,54,32);
-  Putchar(33,80,32);
+  Putchar(34,48,32);
+  Putchar(35,64,32);
+  Putchar(36,80,32);
   OLEDOK();
     int addr = 0;
   for(addr = 0; addr <=2; addr++ ) {
@@ -428,14 +430,16 @@ bool PromptCommand(char Bt_input[])
 
     readflag = true;
     setflag = false;
+    enableflag = false;
   }
   else if (Bt_input[0] == 's')
   {
 
     setflag = true;
     readflag = false;
+enableflag = false;
   }
-    else if (Bt_input[0] == 's')
+    else if (Bt_input[0] == 'e')
   {
     setflag = false;
     readflag = false;
@@ -637,6 +641,7 @@ void loop() // Finished
   {
     if (DoNotRun == false)
     {
+      
       AlarmGo();
       
       DoNotRun = true;
